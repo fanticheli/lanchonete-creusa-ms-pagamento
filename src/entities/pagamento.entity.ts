@@ -58,12 +58,4 @@ export class Pagamento {
 			codigoPix: this._codigoPix,
 		};
 	}
-
-	aprovarPagamento() {
-		this._statusPagamento = StatusPagamentoEnum.APROVADO;
-	}
-
-	negarPagamento() {
-		this._statusPagamento = StatusPagamentoEnum.NEGADO;
-	}
 }

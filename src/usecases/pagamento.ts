@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { PagamentoOutput } from "../adapters/pagamento";
 import { StatusPagamentoEnum } from "../common/enum/status-pagamento-enum";
 import { Pagamento } from "../entities/pagamento.entity";
@@ -46,12 +47,36 @@ export class PagamentoUseCases {
 			throw new Error("Pagamento não encontrado");
 		}
 
+		await PagamentoUseCases.AlterarStatusPagamentoPedido(pagamentoEncontrado.codigoPix, statusPagamento);
+
 		pagamentoEncontrado.statusPagamento = statusPagamento;
 
 		const pagamentoEditado = await pagamentoGatewayInterface.EditarPagamento(pagamentoEncontrado);
 
-		delete pagamentoEditado.codigoPix;
-
 		return pagamentoEditado;
+	}
+
+	static async AlterarStatusPagamentoPedido(
+		codigoPix: string | undefined,
+		statusPagamento: StatusPagamentoEnum
+	): Promise<any> {
+
+		const apiUrl = process.env.MS_PEDIDO_URL || '';
+
+		if (!apiUrl) {
+			throw new Error('Webhook de pedidos não configurado');
+		}
+
+		try {
+			const pagamento = await axios.put(`${apiUrl}/status-pagamento/${codigoPix}`, {
+				statusPagamento: statusPagamento,
+			});
+
+			return pagamento.data;
+		}
+		catch (error) {
+			throw new Error('Não foi possível chamar o webhook de pedido');
+		}
+
 	}
 }

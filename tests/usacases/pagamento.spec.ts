@@ -1,8 +1,9 @@
+import axios from "axios";
 import { StatusPagamentoEnum } from "../../src/common/enum/status-pagamento-enum";
 import { PagamentoProps } from "../../src/entities/props/pagamento.props";
 import { PagamentoRepositoryInMemory } from "../../src/external/memory/pagamento.repository";
 import { PagamentoUseCases } from "../../src/usecases/pagamento";
-
+jest.mock('axios');
 describe("Pagamento", () => {
 	const pagamentoRepository = new PagamentoRepositoryInMemory();
 
@@ -38,6 +39,14 @@ describe("Pagamento", () => {
 	});
 
 	test("Deve aprovar o pagamento", async () => {
+		const mockResponse = {
+			data: {
+				"statusPagamento": "aprovado"
+			},
+		};
+
+		axios.put.mockImplementation(() => Promise.resolve(mockResponse));
+
 		const pagamentoAprovado = await PagamentoUseCases.AlterarStatusPagamento(
 			pagamentoRepository,
 			"01",
