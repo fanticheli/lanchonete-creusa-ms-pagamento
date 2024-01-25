@@ -8,7 +8,7 @@ import { PostgreSQLConnection  } from "./external/postgres/postgree"
 // Inicia a conexão com MongoDB
 MongoConnection.start()
 
-// Inicia a conexão com o PostGre
+// Inicia a conexão com o PostGree
 const postgresConnection = new PostgreSQLConnection();
 postgresConnection.start(); 
 

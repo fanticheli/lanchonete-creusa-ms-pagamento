@@ -9,9 +9,9 @@ export class PostgreSQLConnection {
         dialect: 'postgres',
         host: process.env.PG_HOST || 'localhost',
         port: process.env.PG_PORT ? parseInt(process.env.PG_PORT, 10) : 5432,
-        username: process.env.PG_USER || 'seu_usuario',
-        password: process.env.PG_PASSWORD || 'sua_senha',
-        database: process.env.PG_DATABASE || 'seu_banco_de_dados',
+        username: process.env.PG_USER,
+        password: process.env.PG_PASSWORD,
+        database: process.env.PG_DATABASE,
       });
     }
   
