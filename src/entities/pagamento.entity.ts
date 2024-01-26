@@ -13,8 +13,7 @@ export class Pagamento {
 	constructor(pagamentoProps: PagamentoProps) {
 		this._id = pagamentoProps.id || undefined;
 		this._valorTotal = pagamentoProps.valorTotal || 0;
-		this._statusPagamento =
-			pagamentoProps.statusPagamento || StatusPagamentoEnum.PENDENTE;
+		this._statusPagamento = StatusPagamentoEnum.PENDENTE;
 		this._codigoPix = crypto.randomBytes(20).toString('hex');
 	}
 

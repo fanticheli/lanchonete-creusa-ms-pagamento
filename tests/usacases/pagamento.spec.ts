@@ -5,7 +5,12 @@ import { PagamentoRepositoryInMemory } from "../../src/external/memory/pagamento
 import { PagamentoUseCases } from "../../src/usecases/pagamento";
 jest.mock('axios');
 describe("Pagamento", () => {
-	const pagamentoRepository = new PagamentoRepositoryInMemory();
+	let pagamentoRepository = new PagamentoRepositoryInMemory();
+
+	beforeEach(async () => {
+		pagamentoRepository = new PagamentoRepositoryInMemory();
+		process.env.MS_PEDIDO_URL = 'http://localhost:3000';
+	})
 
 	test("Deve criar um pagamento", async () => {
 		const pagamentoProps: PagamentoProps = {
@@ -25,6 +30,16 @@ describe("Pagamento", () => {
 	});
 
 	test("Deve buscar um pagamento por ID", async () => {
+		const pagamentoProps: PagamentoProps = {
+			valorTotal: 0,
+			statusPagamento: StatusPagamentoEnum.PENDENTE
+		};
+
+		await PagamentoUseCases.CriarPagamento(
+			pagamentoRepository,
+			pagamentoProps
+		);
+
 		const pagamentoEncontrado = await PagamentoUseCases.BuscarPagamentoPorID(
 			pagamentoRepository,
 			"01"
@@ -38,14 +53,35 @@ describe("Pagamento", () => {
 		);
 	});
 
+	test("Deve buscar um pagamento por ID, error: Pagamento não encontrado", async () => {
+		try {
+			await PagamentoUseCases.BuscarPagamentoPorID(
+				pagamentoRepository,
+				"01"
+			);
+		} catch (error: any) {
+			expect(error.message).toBe("Pagamento não encontrado");
+		}
+	});
+
 	test("Deve aprovar o pagamento", async () => {
+		const pagamentoProps: PagamentoProps = {
+			valorTotal: 0,
+			statusPagamento: StatusPagamentoEnum.PENDENTE
+		};
+
+		await PagamentoUseCases.CriarPagamento(
+			pagamentoRepository,
+			pagamentoProps
+		);
+
 		const mockResponse = {
 			data: {
 				"statusPagamento": "aprovado"
 			},
 		};
 
-		axios.put.mockImplementation(() => Promise.resolve(mockResponse));
+		(axios.put as jest.Mock).mockImplementation(() => Promise.resolve(mockResponse));
 
 		const pagamentoAprovado = await PagamentoUseCases.AlterarStatusPagamento(
 			pagamentoRepository,
@@ -61,7 +97,42 @@ describe("Pagamento", () => {
 		);
 	});
 
+	test("Deve aprovar o pagamento, Status de pagamento inválido", async () => {
+		try {
+			await PagamentoUseCases.AlterarStatusPagamento(
+				pagamentoRepository,
+				"01",
+				"" as any
+			);
+		} catch (error: any) {
+			expect(error.message).toBe("Status de pagamento inválido");
+		}
+		
+	});
+
+	test("Deve aprovar o pagamento, Pagamento não encontrado", async () => {
+		try {
+			await PagamentoUseCases.AlterarStatusPagamento(
+				pagamentoRepository,
+				"01",
+				StatusPagamentoEnum.NEGADO
+			);
+		} catch (error: any) {
+			expect(error.message).toBe("Pagamento não encontrado");
+		}
+	});
+
 	test("Deve alterar o status de um pagamento", async () => {
+		const pagamentoProps: PagamentoProps = {
+			valorTotal: 0,
+			statusPagamento: StatusPagamentoEnum.PENDENTE
+		};
+
+		await PagamentoUseCases.CriarPagamento(
+			pagamentoRepository,
+			pagamentoProps
+		);
+		
 		const pagamentoEmPreparo = await PagamentoUseCases.AlterarStatusPagamento(
 			pagamentoRepository,
 			"01",
@@ -74,6 +145,51 @@ describe("Pagamento", () => {
 		expect(pagamentoEmPreparo?.statusPagamento).toBe(
 			StatusPagamentoEnum.NEGADO
 		);
+	})
+
+	test("Deve alterar o status de um pagamento, Webhook de pedidos não configurado", async () => {
+		process.env.MS_PEDIDO_URL = '';
+		const pagamentoProps: PagamentoProps = {
+			valorTotal: 0,
+			statusPagamento: StatusPagamentoEnum.PENDENTE
+		};
+
+		await PagamentoUseCases.CriarPagamento(
+			pagamentoRepository,
+			pagamentoProps
+		);
+		
+		try {
+			await PagamentoUseCases.AlterarStatusPagamento(
+				pagamentoRepository,
+				"01",
+				StatusPagamentoEnum.NEGADO
+			);
+		} catch (error: any) {
+			expect(error.message).toBe('Webhook de pedidos não configurado');
+		}
+	})
+
+	test("Deve alterar o status de um pagamento, Não foi possível chamar o webhook de pedido", async () => {
+		const pagamentoProps: PagamentoProps = {
+			valorTotal: 0,
+			statusPagamento: StatusPagamentoEnum.PENDENTE
+		};
+
+		await PagamentoUseCases.CriarPagamento(
+			pagamentoRepository,
+			pagamentoProps
+		);
+		
+		try {
+			await PagamentoUseCases.AlterarStatusPagamento(
+				pagamentoRepository,
+				"01",
+				StatusPagamentoEnum.NEGADO
+			);
+		} catch (error: any) {
+			expect(error.message).toBe('Não foi possível chamar o webhook de pedido');
+		}
 	})
 
 });
