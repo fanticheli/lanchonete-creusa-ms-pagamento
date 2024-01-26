@@ -1,4 +1,5 @@
 import { PagamentoOutput } from "../../adapters/pagamento";
+import { StatusPagamentoEnum } from "../../common/enum/status-pagamento-enum";
 import { Pagamento } from "../../entities/pagamento.entity";
 import { PagamentoProps } from "../../entities/props/pagamento.props";
 import { IPagamentoGateway } from "../../interfaces/gateway/pagamento.gateway.interface";
@@ -32,9 +33,9 @@ export class PagamentoRepositoryInMemory implements IPagamentoGateway {
 			throw new Error("ID do Pagamento não informado");
 		}
 
-		this.pagamentos.map((Pagamento) => {
-			if (Pagamento.id === editarPagamentoDTO.id) {
-				Pagamento.statusPagamento = editarPagamentoDTO.statusPagamento;
+		this.pagamentos.map((pagamento) => {
+			if (pagamento.id === editarPagamentoDTO.id) {
+				pagamento.statusPagamento = editarPagamentoDTO.statusPagamento || StatusPagamentoEnum.PENDENTE;
 			}
 		});
 
