@@ -1,4 +1,5 @@
 import axios from 'axios';
+import amqp from 'amqplib';
 import { PagamentoOutput } from "../adapters/pagamento";
 import { StatusPagamentoEnum } from "../common/enum/status-pagamento-enum";
 import { Pagamento } from "../entities/pagamento.entity";
@@ -47,36 +48,35 @@ export class PagamentoUseCases {
 			throw new Error("Pagamento não encontrado");
 		}
 
-		await PagamentoUseCases.AlterarStatusPagamentoPedido(pagamentoEncontrado.codigoPix, statusPagamento);
+		const wasPublished = await PagamentoUseCases.EnviarAprovacaoPagamento(pagamentoEncontrado.numeroPedido, statusPagamento);
+
+		if (!wasPublished) {
+			throw new Error("Erro ao enviar pagamento aprovado");
+		}
 
 		pagamentoEncontrado.statusPagamento = statusPagamento;
 
-		const pagamentoEditado = await pagamentoGatewayInterface.EditarPagamento(pagamentoEncontrado);
-
-		return pagamentoEditado;
+		return pagamentoGatewayInterface.EditarPagamento(pagamentoEncontrado);;
 	}
 
-	static async AlterarStatusPagamentoPedido(
-		codigoPix: string | undefined,
+	static async EnviarAprovacaoPagamento(
+		numeroPedido: number,
 		statusPagamento: StatusPagamentoEnum
-	): Promise<any> {
-
-		const apiUrl = process.env.MS_PEDIDO_URL || '';
-
-		if (!apiUrl) {
-			throw new Error('Webhook de pedidos não configurado');
-		}
-
+	): Promise<boolean> {
 		try {
-			const pagamento = await axios.put(`${apiUrl}/status-pagamento/${codigoPix}`, {
-				statusPagamento: statusPagamento,
+			const connection = await amqp.connect(process.env.QUEUE_HOST || '');
+			const channel = await connection.createConfirmChannel();
+			const queueName = process.env.QUEUE_PAGAMENTOS_NAME || '';
+			await channel.assertQueue(queueName, { durable: true });
+			const messageContent = JSON.stringify({ numeroPedido, statusPagamento });
+			await channel.sendToQueue(queueName, Buffer.from(messageContent), undefined, (err) => {
+				if (err !== null) throw err;
+				connection.close();
 			});
-
-			return pagamento.data;
+			return true;
 		}
 		catch (error) {
-			throw new Error('Não foi possível chamar o webhook de pedido');
+			throw error;
 		}
-
 	}
 }

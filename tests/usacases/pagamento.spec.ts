@@ -1,20 +1,44 @@
-import axios from "axios";
+import amqp from 'amqplib';
 import { StatusPagamentoEnum } from "../../src/common/enum/status-pagamento-enum";
 import { PagamentoProps } from "../../src/entities/props/pagamento.props";
 import { PagamentoRepositoryInMemory } from "../../src/external/memory/pagamento.repository";
 import { PagamentoUseCases } from "../../src/usecases/pagamento";
-jest.mock('axios');
+jest.mock('amqplib');
+class MockChannel {
+	assertQueue() {
+		return Promise.resolve();
+	}
+
+	sendToQueue() {
+		return Promise.resolve();
+	}
+}
+
+class MockConnection {
+	createConfirmChannel() {
+		return Promise.resolve(new MockChannel());
+	}
+
+	createChannel() {
+		return Promise.resolve(new MockChannel());
+	}
+
+	close() {
+		return Promise.resolve();
+	}
+}
+
 describe("Pagamento", () => {
 	let pagamentoRepository = new PagamentoRepositoryInMemory();
 
 	beforeEach(async () => {
 		pagamentoRepository = new PagamentoRepositoryInMemory();
-		process.env.MS_PEDIDO_URL = 'http://localhost:3000';
 	})
 
 	test("Deve criar um pagamento", async () => {
 		const pagamentoProps: PagamentoProps = {
 			valorTotal: 0,
+			numeroPedido: 1,
 			statusPagamento: StatusPagamentoEnum.PENDENTE
 		};
 
@@ -32,6 +56,7 @@ describe("Pagamento", () => {
 	test("Deve buscar um pagamento por ID", async () => {
 		const pagamentoProps: PagamentoProps = {
 			valorTotal: 0,
+			numeroPedido: 1,
 			statusPagamento: StatusPagamentoEnum.PENDENTE
 		};
 
@@ -67,6 +92,7 @@ describe("Pagamento", () => {
 	test("Deve aprovar o pagamento", async () => {
 		const pagamentoProps: PagamentoProps = {
 			valorTotal: 0,
+			numeroPedido: 1,
 			statusPagamento: StatusPagamentoEnum.PENDENTE
 		};
 
@@ -75,13 +101,7 @@ describe("Pagamento", () => {
 			pagamentoProps
 		);
 
-		const mockResponse = {
-			data: {
-				"statusPagamento": "aprovado"
-			},
-		};
-
-		(axios.put as jest.Mock).mockImplementation(() => Promise.resolve(mockResponse));
+		(amqp.connect as jest.Mock).mockImplementation(() => Promise.resolve(new MockConnection()));
 
 		const pagamentoAprovado = await PagamentoUseCases.AlterarStatusPagamento(
 			pagamentoRepository,
@@ -125,6 +145,7 @@ describe("Pagamento", () => {
 	test("Deve alterar o status de um pagamento", async () => {
 		const pagamentoProps: PagamentoProps = {
 			valorTotal: 0,
+			numeroPedido: 1,
 			statusPagamento: StatusPagamentoEnum.PENDENTE
 		};
 
@@ -148,9 +169,9 @@ describe("Pagamento", () => {
 	})
 
 	test("Deve alterar o status de um pagamento, Webhook de pedidos não configurado", async () => {
-		process.env.MS_PEDIDO_URL = '';
 		const pagamentoProps: PagamentoProps = {
 			valorTotal: 0,
+			numeroPedido: 1,
 			statusPagamento: StatusPagamentoEnum.PENDENTE
 		};
 
@@ -173,6 +194,7 @@ describe("Pagamento", () => {
 	test("Deve alterar o status de um pagamento, Não foi possível chamar o webhook de pedido", async () => {
 		const pagamentoProps: PagamentoProps = {
 			valorTotal: 0,
+			numeroPedido: 1,
 			statusPagamento: StatusPagamentoEnum.PENDENTE
 		};
 
