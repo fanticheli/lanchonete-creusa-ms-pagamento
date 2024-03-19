@@ -12,6 +12,7 @@ describe("Pagamento", () => {
 		const pagamentoProps: PagamentoProps = {
 			id: "01",
 			valorTotal: 0,
+			numeroPedido: 1,
 			statusPagamento: StatusPagamentoEnum.PENDENTE
 		};
 
@@ -24,6 +25,7 @@ describe("Pagamento", () => {
 	it("Create a new Pagamento", () => {
 		const pagamentoProps: PagamentoProps = {
 			id: "01",
+			numeroPedido: 1,
 			valorTotal: 0
 		};
 

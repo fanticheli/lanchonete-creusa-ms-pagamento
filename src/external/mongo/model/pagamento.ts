@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const PagamentoSchema = new mongoose.Schema(
 	{
 		valorTotal: Number,
+		numeroPedido: Number,
 		statusPagamento: String,
 		codigoPix: String,
 	},
