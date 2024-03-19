@@ -44,7 +44,7 @@ export class PagamentoRepositoryInMemory implements IPagamentoGateway {
 
 	async DeletaPagamentoPorID(pagamentoID: string): Promise<any> {
 		const pagamentoEncontrado = this.pagamentos.find(
-			(pagamento) => pagamento.id === pagamentoID
+			(pagamento) => pagamento.numeroPedido === +pagamentoID
 		);
 
 		if (!pagamentoEncontrado) {
@@ -52,7 +52,7 @@ export class PagamentoRepositoryInMemory implements IPagamentoGateway {
 		}
 
 		this.pagamentos = this.pagamentos.filter(
-			(pagamento) => pagamento.id !== pagamentoID
+			(pagamento) => pagamento.numeroPedido !== +pagamentoID
 		);
 
 		return true;
