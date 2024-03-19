@@ -27,11 +27,11 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t acrlanchonete.azurecr.io/lanchonetecreusa-ms-pagamento:${{ github.sha }} .
-          docker login acrlanchonete.azurecr.io -u acrlanchonete -p ${{ secrets.ACR_PASSWORD }}
-          docker push acrlanchonete.azurecr.io/lanchonetecreusa-ms-pagamento:${{ github.sha }}
+          docker build -t acrlanchonetee.azurecr.io/lanchonetecreusa-ms-pagamento:${{ github.sha }} .
+          docker login acrlanchonetee.azurecr.io -u acrlanchonetee -p ${{ secrets.ACR_PASSWORD }}
+          docker push acrlanchonetee.azurecr.io/lanchonetecreusa-ms-pagamento:${{ github.sha }}
         env:
-          ACR_REGISTRY: acrlanchonete.azurecr.io
+          ACR_REGISTRY: acrlanchonetee.azurecr.io
           ACR_REPOSITORY: lanchonetecreusa-ms-pagamento
         shell: bash
 
