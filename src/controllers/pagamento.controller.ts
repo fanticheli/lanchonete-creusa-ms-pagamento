@@ -48,4 +48,18 @@ export class PagamentoController {
 			throw error;
 		}
 	}
+
+	static async DeletaPagamentoPorID(
+		pagamentoGatewayInterface: IPagamentoGateway,
+		pagamentoID: string
+	): Promise<boolean> {
+		try {
+			return await PagamentoUseCases.DeletaPagamentoPorID(
+				pagamentoGatewayInterface,
+				pagamentoID
+			);
+		} catch (error) {
+			throw error;
+		}
+	}
 }

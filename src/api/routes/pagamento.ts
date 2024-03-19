@@ -121,4 +121,39 @@ router.put("/:id", async (req: Request, res: Response) => {
 		});
 });
 
+/**
+ * @swagger
+ * /api/pagamentos/{id}:
+ *   delete:
+ *     summary: Deleta Pagamento por id
+ *     tags: [Pagamento]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do Pagamento a ser deletado.
+ *     description: Se pagamento foi deletado com o id informado.
+ *     responses:
+ *       200:
+ *         description: Pagamento deletado
+ */
+router.delete("/:id", async (req: Request, res: Response) => {
+	await PagamentoController.DeletaPagamentoPorID(
+		pagamentoRepositoryInMongo,
+		req.params.id
+	)
+		.then((response) => {
+			if (response) {
+				return res.status(200).send({ message: "Pagamento deletado" });
+			}
+			
+			return res.status(400).send({ message: "Pagamento não encontrado" });
+		})
+		.catch((err: any) => {
+			res.status(400).send({ message: err?.message });
+		});
+});
+
 module.exports = router;

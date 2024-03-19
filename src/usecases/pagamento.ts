@@ -79,4 +79,19 @@ export class PagamentoUseCases {
 			throw error;
 		}
 	}
+
+	static async DeletaPagamentoPorID(
+		pagamentoGatewayInterface: IPagamentoGateway,
+		pagamentoID: string
+	): Promise<boolean> {
+		const pagamentoEncontrado = await pagamentoGatewayInterface.DeletaPagamentoPorID(
+			pagamentoID
+		);
+
+		if (pagamentoEncontrado.deletedCount && pagamentoEncontrado.deletedCount === 0) {
+			throw new Error("Pagamento não encontrado");
+		}
+
+		return true;
+	}
 }
