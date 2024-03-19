@@ -38,4 +38,12 @@ export class PagamentoRepositoryInMongo implements IPagamentoGateway {
 			new: true,
 		});
 	}
+
+	async DeletaPagamentoPorID(pagamentoID: string): Promise<any> {
+		if (!ObjectId.isValid(pagamentoID)) {
+			throw new Error("ID inválido");
+		}
+
+		return await this._model.deleteOne({ _id: pagamentoID });
+	}
 }

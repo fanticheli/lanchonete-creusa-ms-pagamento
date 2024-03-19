@@ -41,4 +41,20 @@ export class PagamentoRepositoryInMemory implements IPagamentoGateway {
 
 		return editarPagamentoDTO;
 	}
+
+	async DeletaPagamentoPorID(pagamentoID: string): Promise<any> {
+		const pagamentoEncontrado = this.pagamentos.find(
+			(pagamento) => pagamento.id === pagamentoID
+		);
+
+		if (!pagamentoEncontrado) {
+			throw new Error("Pagamento não encontrado");
+		}
+
+		this.pagamentos = this.pagamentos.filter(
+			(pagamento) => pagamento.id !== pagamentoID
+		);
+
+		return true;
+	}
 }
